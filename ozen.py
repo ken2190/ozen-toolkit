@@ -22,11 +22,10 @@ if __name__ == '__main__':
     parser.add_argument('-seg_onset', help='onset activation threshold, influences the segment detection', default=0.6, type=float)
     parser.add_argument('-seg_offset', help='offset activation threshold, influences the segment detection', default=0.4, type=float)
     parser.add_argument('-seg_min_duration', help='minimum duration of a segment, remove speech regions shorter than that many seconds.', default=2.0, type=float)
-    parser.add_argument('-max_duration', help='Maximum duration of a segment', default=10.0, type=float)
     parser.add_argument('-seg_min_duration_off', help='fill non-speech regions shorter than that many seconds.', default=0.0, type=float)
     parser.add_argument('-hf_token', help='Huggingface token', default='')
     parser.add_argument('-valid_ratio', help='Ratio of validation data', default=0.2, type=float)
-    parser.add_argument('-language', help='Language in the audio file', default='en')
+    parser.add_argument('-language', help='Language in the audio file', default='de')
     parser.add_argument('-ignore-cofnig', help='Ignore the config, specifiy your own setting sin CLI', action='store_true')
     args = parser.parse_args()
     #check for config.ini
@@ -116,12 +115,12 @@ if __name__ == '__main__':
                 pb = tqdm(total=len(groups))
                 for wav in range(0,wavs):
                     wav = str(wav)
-                    res = transcribe_audio(os.path.join(os.getcwd(), wav+'.wav'),transcribe_pipe)
+                    res = transcribe_audio(os.path.join(os.getcwd(), wav+'.wav'),transcribe_pipe, language=args.language)
                     pb.update(1)
             if args.mode == 'segment and transcribe':
                 print(colorama.Fore.GREEN + 'Loading Segment Model...' + colorama.Fore.RESET)
                 pipe = load_pyannote_audio_model(args.segmentation_model, args.hf_token)
-                segments = segment_audio_file(file_path, pipe, args.seg_onset, args.seg_offset, args.seg_min_duration, args.seg_min_duration_off, args.seg_max_duration, language=args.language)
+                segments = segment_audio_file(file_path, pipe, args.seg_onset, args.seg_offset, args.seg_min_duration, args.seg_min_duration_off)
                 #milisecs = millisec(segments)
                 print(colorama.Fore.GREEN + 'Segmenting...' + colorama.Fore.RESET)
                 groups = group_segmentation(segments)
@@ -137,13 +136,13 @@ if __name__ == '__main__':
                 pb = tqdm(total=len(groups))
                 for wav in range(0,amount_to_train):
                     wav = str(wav)
-                    res = transcribe_audio(os.path.join(wavs_path, wav+'.wav'),transcribe_pipe)[1:]
+                    res = transcribe_audio(os.path.join(wavs_path, wav+'.wav'),transcribe_pipe, language=args.language)[1:]
                     #add to train file
                     add_to_textfile(train_file, 'wavs/'+wav+'.wav|'+res+'\n')
                     pb.update(1)
                 for wav in range(amount_to_train,amount_to_train+amount_to_valid):
                     wav = str(wav)
-                    res = transcribe_audio(os.path.join(wavs_path, wav+'.wav'),transcribe_pipe)[1:]
+                    res = transcribe_audio(os.path.join(wavs_path, wav+'.wav'),transcribe_pipe, language=args.language)[1:]
                     #add to valid file
                     add_to_textfile(valid_file, 'wavs/'+wav+'.wav|'+res+'\n')
                     pb.update(1)
@@ -178,21 +177,21 @@ if __name__ == '__main__':
                     for wav in range(0,amount_to_train):
                         gidx += 1
                         wav = str(wav)
-                        res = transcribe_audio(os.path.join(wavs_path, wav+'.wav'),transcribe_pipe)[1:]
+                        res = transcribe_audio(os.path.join(wavs_path, wav+'.wav'),transcribe_pipe, language=args.language)[1:]
                         #add to train file
                         add_to_textfile(train_file, 'wavs/'+wav+'.wav|'+res+'\n')
                         pb.update(1)
                     for wav in range(amount_to_train,amount_to_train+amount_to_valid):
                         gidx += 1
                         wav = str(wav)
-                        res = transcribe_audio(os.path.join(wavs_path, wav+'.wav'),transcribe_pipe)[1:]
+                        res = transcribe_audio(os.path.join(wavs_path, wav+'.wav'),transcribe_pipe, language=args.language)[1:]
                         #add to valid file
                         add_to_textfile(valid_file, 'wavs/'+wav+'.wav|'+res+'\n')
                         pb.update(1)
                 if args.mode == 'segment and transcribe':
                     print(colorama.Fore.GREEN + 'Loading Segment Model...' + colorama.Fore.RESET)
                     pipe = load_pyannote_audio_model(args.segmentation_model, args.hf_token)
-                    segments = segment_audio_file(file_path, pipe, args.seg_onset, args.seg_offset, args.seg_min_duration, args.seg_min_duration_off, args.seg_max_duration, language=args.language)
+                    segments = segment_audio_file(file_path, pipe, args.seg_onset, args.seg_offset, args.seg_min_duration, args.seg_min_duration_off)
                     #milisecs = millisec(segments)
                     print(colorama.Fore.GREEN + 'Segmenting...' + colorama.Fore.RESET)
                     groups = group_segmentation(segments)
@@ -209,14 +208,14 @@ if __name__ == '__main__':
                     for wav in range(0,amount_to_train):
                         gidx += 1
                         wav = str(wav)
-                        res = transcribe_audio(os.path.join(wavs_path, str(gidx)+'.wav'),transcribe_pipe)[1:]
+                        res = transcribe_audio(os.path.join(wavs_path, str(gidx)+'.wav'),transcribe_pipe, language=args.language)[1:]
                         #add to train file
                         add_to_textfile(train_file, 'wavs/'+str(gidx)+'.wav|'+res+'\n')
                         pb.update(1)
                     for wav in range(amount_to_train,amount_to_train+amount_to_valid):
                         gidx += 1
                         wav = str(wav)
-                        res = transcribe_audio(os.path.join(wavs_path, str(gidx)+'.wav'),transcribe_pipe)[1:]
+                        res = transcribe_audio(os.path.join(wavs_path, str(gidx)+'.wav'),transcribe_pipe, language=args.language)[1:]
                         #add to valid file
                         add_to_textfile(valid_file, 'wavs/'+str(gidx)+'.wav|'+res+'\n')
                         pb.update(1)
