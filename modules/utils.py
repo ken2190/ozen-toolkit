@@ -27,7 +27,7 @@ def create_output_structure(output_path, project_name, project_timestamp):
     #create_dir(output_path)
     return output_path
 def add_to_textfile(file_path, text):
-    with open(file_path, "a") as text_file:
+    with open(file_path, 'a', encoding='utf-8') as text_file:
         text_file.write(text)
 
 def convert_to_wav(file_path):
@@ -161,16 +161,17 @@ def segment_file_by_diargroup(file_path,output_path, groups,gidx=-1):
         file = audio[start:end].export(os.path.join(output_path,str(gidx) + '.wav'), format='wav')
         #print(file)
     return gidx
-def init_transcribe_pipeline(model_name,device=0):
+	
+def init_transcribe_pipeline(model_name, device=0):
     pipe = pipeline(
         "automatic-speech-recognition",
         model=model_name,
         chunk_length_s=30,
         device=device,
     )
-    
     return pipe
-def transcribe_audio(audio_file,pipe):
+
+def transcribe_audio(audio_file,pipe,language='en'):
     # Load the audio file
     
     #audio = AudioSegment.from_file(audio_file)
@@ -185,6 +186,7 @@ def transcribe_audio(audio_file,pipe):
 
     # Process the audio file
     #prediction = pipe(audio, return_timestamps=True)["chunks"]
-    prediction = pipe(audio_file)["text"]
+    prediction = pipe(audio_file, generate_kwargs = {"task":"transcribe", "language":f"<|{language}|>"} )["text"]
+    #prediction = pipe(audio_file)["text"]
     #print(prediction)
     return prediction
